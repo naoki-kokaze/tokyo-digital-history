@@ -629,7 +629,7 @@ def substitute_to_person_name(target_text, person_list):
         try:
             author = api_dict['searchRetrieveResponse']['records'][0]['record']['recordData']['titles']['author']
             viaf_id = author['@id'][5:]
-            viaf_uri = 'https://viaf.org' + '/' + viaf_id
+            viaf_uri = 'https://viaf.org/viaf' + viaf_id
 
         except KeyError as error:
             print(f'{person} does not have the {error} key.')
