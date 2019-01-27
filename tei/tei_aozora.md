@@ -343,7 +343,7 @@ VIAFに記載された人名のIDを取得するには、どのようにすれ�
 
 ただし、HTMLファイルを対象としたWEBスクレイピングは、ウェブページのデザインが変更されたりするとスクレイピングのコードを活用することができなくなってしまう危険性があります。つまり、安定したデータ取得ができないのです。
 
-現在、多くのウェブサービスでは、人間のユーザがブラウザで閲覧するために生成されたHTMLではなく、コンピュータによる分析や二次利用に適したデータだけが格納されたXMLやJSONファイルを、WEB APIとして提供しています。WEB APIを公開することにより、アプリケーション同士の情報の共有・分析・再利用のスピードが格段に向上するため、結果としてAPIを公開しているウェブサービスの価値を高めることにつながるのです ([水野, 2014](#mizuno2014); [Blanke, 2014](#blanke2014))。
+現在、多くのウェブサービスでは、人間のユーザがブラウザで閲覧するために生成されたHTMLではなく、コンピュータによる分析や二次利用に適したデータだけが格納されたXMLやJSONファイルを、WEB APIとして提供しています。WEB APIを公開することにより、アプリケーション同士の情報の共有・分析・再利用のスピードが格段に向上するため、結果としてAPIを公開しているウェブサービスの価値を高めることにつながるのです ([水野, 2014](#mizuno2014); [Blanke, 2014](#blanke2014))。この背景には、標準化された通信プロトコルであるHTTPを介して、ウェブリソースのアドレスをURIによって一意に指定できるようにWEB APIを設計することにより、ウェブ上のデータが相互につながりあい、結果としてウェブの世界が成長するというREST APIの設計理念を見て取ることができます ([Fielding, 2005](#fielding2005), chap. 5: Representational State Transfer (REST))。
 
 WEB APIは、ウェブ空間の性格を大きく変えることに貢献した技術のひとつです。すなわち、かつてのWWW（ワールド・ワイド・ウェブ）においては、サービスを提供する側とサービスを受け取るユーザの関係が非対称的で一方向的なものだったのですが、WEB APIをはじめとするWEB 2.0技術の登場により、WWW上ではユーザがウェブ上に流通するデータに容易にアクセスし、自らも価値を発信できるようになりました。すなわち、サービス提供のためのプラットフォームから情報発信のためのプラットフォームへと変貌を遂げたのです ([O'Reilly, 2005](#oreilly2005); [橋本, 2018](#hashimoto2018))。TEIマークアップを通じてウェブの世界に知を発信することも、XMLというコンピュータで扱いやすい標準化されたデータ形式に則っていることに大きく支えられています ([Ide et al., 2019](#ide2019))。
 
@@ -732,6 +732,8 @@ https://github.com/TEI-EAJ/aozora_tei/blob/master/data/complete/tei_lib_lv4/5036
 <a id="blanke2014">Blanke, T. (2014)</a> *Digital Asset Ecosystems: Rethinking Crowds and Clouds*. Kidlington: Chandos.
 
 <a id="eide2014">Eide, Ø. (2014)</a> Ontologies, Data Modeling, and TEI. *Journal of the Text Encoding Initiative*. [Online] (Issue 8). Available from: http://journals.openedition.org/jtei/1191 (Accessed 30 October 2018).
+
+<a>Fielding, R. (2000)</a> *Architectural Styles and the Design of Network-based Software Architectures*. DPhill Dissertation, University of California, Irvine. [online]. Available from: https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm (Accessed 27 January 2019).
 
 <a id="hashimoto2018">橋本雄太 (2018)</a> 市民参加型史料研究のためのデジタル人文学基盤の構築. 博士論文, 京都大学. Available from: http://hdl.handle.net/2433/233817 (Accessed 7 December 2018).
 
