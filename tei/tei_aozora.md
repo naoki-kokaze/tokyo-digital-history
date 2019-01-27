@@ -53,7 +53,7 @@
 
 ## 1-3. **より広い意義：セマンティックWEBとTEIマークアップ**
 
-前節で述べたような固有表現抽出のことを英語ではNER (Named Entity Recognition) と呼びますが、NER技術を活用してマークアップ支援を行うオンライン・プラットフォームとして、Pelagios Commonsによる<a href="https://recogito.pelagios.org/">Recogito</a>が挙げられます ([Simon et al., 2015](#simon2015))。本ガイドラインは、技術レベルではこのようなサービスに劣りますが、TEIマークアップによって生み出される利点についてのビジョンを共有しています。
+本ガイドラインでは、人名・地名などの固有表現を形態素解析モジュールによって抽出します。この固有表現抽出のことを英語ではNER (Named Entity Recognition) と呼びますが、NER技術を活用してマークアップ支援を行うオンライン・プラットフォームとして、Pelagios Commonsによる<a href="https://recogito.pelagios.org/">Recogito</a>が挙げられます ([Simon et al., 2015](#simon2015))。本ガイドラインは、技術レベルではこのようなサービスに劣りますが、TEIマークアップによって生み出される利点についてのビジョンを共有しています。
 
 そのビジョンとは、すなわち、テクストに見られる固有表現について可能な限り外部の学術ソースへのリンクを貼ることによって、自らがマークアップしたテクストをセマンティックWEB技術によって解釈しやすいデータとして流通させることができ、結果としてウェブ上に広がる膨大な知のネットワークを豊かにすることができる、というものです ([Bizer, 2009](#bizer2009); [Hughes et al., 2016](#hughes2016), pp. 160-161; [Oldman et al., 2016](#oldman2016), p. 262)。
 
@@ -173,7 +173,10 @@ persons = ['林子平', '橋本左内', 'ペリー', '井伊大老', '安藤昌�
 <persName ref="http://viaf.org/viaf/42142122">林子平</persName>
 ```
 
-<span style="color:orange">**@ref**</span> 属性を用いている理由については、3-2. をご参照ください。
+TEIマークアップ中で何かを参照しようとする際に用いられる属性は、上記の <span style="color:orange">**@ref**</span> 属性のほかにも、<span style="color:orange">**@key**</span> 属性が挙げられます。TEI P5ガイドラインの att.canonical 属性クラスの解説によれば、<span style="color:orange">**@ref**</span> 属性での参照はより明示的で、外部で定義されたURIなどを指定する際に用いる一方、<span style="color:orange">**@key**</span> 属性は何らかの決まりにしたがった形で外部参照の手段を提供する際に用いるとされています (http://www.tei-c.org/release/doc/tei-p5-doc/ja/html/ref-att.canonical.html)。
+
+つまり、<span style="color:orange">**@key**</span> 属性の方が、プロジェクト毎のルールに沿った柔軟な参照方法を記述できるわけですが、本ガイドラインでは<span style="color:orange">**@ref**</span> 属性を用いて外部のURIを直接記述する方が適切であるということになります。
+
 ---
 4. # <a id="spatial">地名の記述</a>
 
@@ -208,18 +211,13 @@ for row in parsed_list:
         pos = row.split('\t')[1].split(',')[2]
         if pos == '地域':
             places.append(word)
-```
-結果は次のようになります。
-
-```py
-places = ['中国', '中国', '極東', '日本', '南京', 'ナンキン', '日本', 'イギリス', '日本', 'インド', '中国', '日本', '日本', 'インド', 'インド', '中国', 'アメリカ', '日本', '中国', 'イギリス', '日本', 'アメリカ', '中国', 'イギリス', '西欧', 'アメリカ', 'サンフランシスコ', '中国', '中国', 'イギリス', '中国', 'アメリカ', 'イギリス', '日本', '那覇', '小笠原', '父島', '日本', '父島', '上海', 'シャンハイ', '日本', '薩摩', 'さつま', 'イギリス', '対馬', '対馬', '尾張', '文久', '日本', 'アメリカ', '日本', 'イギリス', '日本', 'フランス', 'イギリス', 'アメリカ', '日本', 'アジア', '琉球', '台湾', '日本', '中国', '朝鮮', '日本', 'イギリス', '英', '米', 'ポーツマス', 'アメリカ', '日', '露', '日本', 'アジア', 'サンフランシスコ', '日', '米', '日', '米', '日本']
 
 # 重複を削除
 places = list(set(places))
 
 # places = ['台湾', '上海', '小笠原', 'アメリカ', 'ナンキン', '極東', '英', 'さつま', '中国', '文久', 'アジア', 'ポーツマス', 'イギリス', 'フランス', 'インド', '薩摩', '琉球', '露', '那覇', '日', '米', '尾張', '朝鮮', '日本', '南京', 'シャンハイ', 'サンフランシスコ', '西欧', '父島', '対馬']
 ```
-ただし、ここにはリストアップされていない地名もありますし、このリストには読み仮名が登録されていたりするなど、改善の余地が残されています。mecab-python3の辞書にユーザー定義の単語を登録することもできますが、今回は手作業で地名リストを調整することにしておきます。検討を要する地名もありますが、ひとまず次に進みましょう。
+ただし、ここにはリストアップされていない「紀州」などの地名もありますし、このリストには読み仮名が登録されていたりするなど、改善の余地が残されています。mecab-python3の辞書にユーザー定義の単語を登録することもできますが、今回は手作業で地名リストを調整することにしておきます。検討を要する地名もありますが、ひとまず次に進みましょう。
 
 ```py
 places = ['中国', '日本', '極東', 'イギリス', 'インド', 'アメリカ', 'サンフランシスコ', '沖繩', '那覇', '小笠原', '父島', '上海', '生麦', '薩摩', '対馬', '紀州', '尾張', 'フランス', 'アジア', '台湾', '朝鮮', 'ポーツマス']
@@ -235,9 +233,7 @@ places = ['中国', '日本', '極東', 'イギリス', 'インド', 'アメリ�
 <placeName ref="https://www.geonames.org/5391959">サンフランシスコ</placeName>
 ```
 
-TEIマークアップ中で何かを参照しようとする際に用いられる属性は、上記の <span style="color:orange">**@ref**</span> 属性のほかにも、<span style="color:orange">**@key**</span> 属性が挙げられます。TEI P5ガイドラインの att.canonical 属性クラスの解説によれば、<span style="color:orange">**@ref**</span> 属性での参照はより明示的で、外部で定義されたURIなどを指定する際に用いる一方、<span style="color:orange">**@key**</span> 属性は何らかの決まりにしたがった形で外部参照の手段を提供する際に用いるとされています (http://www.tei-c.org/release/doc/tei-p5-doc/ja/html/ref-att.canonical.html)。
-
-つまり、<span style="color:orange">**@key**</span> 属性の方が、プロジェクト毎のルールに沿った柔軟な参照方法を記述できるわけですが、本ガイドラインでは<span style="color:orange">**@ref**</span> 属性を用いて外部のURIを直接記述する方が適切であるということになります。
+<span style="color:orange">**@ref**</span> 属性を用いている理由については、3-2. をご参照ください。
 
 ## 4-3. 地名辞典について
 
@@ -349,7 +345,7 @@ VIAFに記載された人名のIDを取得するには、どのようにすれ�
 
 現在、多くのウェブサービスでは、人間のユーザがブラウザで閲覧するために生成されたHTMLではなく、コンピュータによる分析や二次利用に適したデータだけが格納されたXMLやJSONファイルを、WEB APIとして提供しています。WEB APIを公開することにより、アプリケーション同士の情報の共有・分析・再利用のスピードが格段に向上するため、結果としてAPIを公開しているウェブサービスの価値を高めることにつながるのです ([水野, 2014](#mizuno2014); [Blanke, 2014](#blanke2014))。
 
-WEB APIは、ウェブ空間の性格を大きく変えることに貢献した技術のひとつです。すなわち、かつてのWWW（ワールド・ワイド・ウェブ）においては、サービスを提供する側とサービスを受け取るユーザの関係が非対称的で一方向的なものだったのですが、WEB APIをはじめとするWEB 2.0技術の登場により、WWW上ではユーザがウェブ上に流通するデータに容易にアクセスし、自らも価値を発信できるようになりました。すなわち、サービス提供のためのプラットフォームから情報発信のためのプラットフォームへと変貌を遂げたのです ([O'Reilly, 2005](#oreilly2005); [橋本, 2018](#hashimoto2018))。TEIマークアップを通じてウェブの世界に知を発信することも、XMLというコンピュータで扱いやすい標準化されたデータ形式に則っていることに大きく支えられているのです ([Ide et al., 2019](#ide2019))。
+WEB APIは、ウェブ空間の性格を大きく変えることに貢献した技術のひとつです。すなわち、かつてのWWW（ワールド・ワイド・ウェブ）においては、サービスを提供する側とサービスを受け取るユーザの関係が非対称的で一方向的なものだったのですが、WEB APIをはじめとするWEB 2.0技術の登場により、WWW上ではユーザがウェブ上に流通するデータに容易にアクセスし、自らも価値を発信できるようになりました。すなわち、サービス提供のためのプラットフォームから情報発信のためのプラットフォームへと変貌を遂げたのです ([O'Reilly, 2005](#oreilly2005); [橋本, 2018](#hashimoto2018))。TEIマークアップを通じてウェブの世界に知を発信することも、XMLというコンピュータで扱いやすい標準化されたデータ形式に則っていることに大きく支えられています ([Ide et al., 2019](#ide2019))。
 
 本ガイドラインで扱うVIAFも、WEB APIを提供していますので、次のような処理手順を踏むことにしましょう。
 
@@ -411,7 +407,7 @@ author = api_dict['searchRetrieveResponse']['records'][0]['record']['recordData'
 ```py
 viaf_id = author['@id'][5:]
 
-viaf_uri = 'https://viaf.org' + '/' + viaf_id
+viaf_uri = 'https://viaf.org/viaf/' + viaf_id
 # viaf_uri = 'https://viaf.org/viaf/42142122' となる
 ```
 
@@ -552,6 +548,10 @@ events = ['阿片戦争', '南京条約', '生麦事件', '南北戦争', '明�
 
 
 def extract_people_and_places(target_text):
+    """
+    形態素解析によって人名と地名を抽出し、それぞれリストとして返す
+    """
+
     m = MeCab.Tagger()
     parsed_words = m.parse(contents)
     parsed_list = parsed_words.split('\n')
@@ -614,9 +614,9 @@ def convert_to_arabic_numeric(target_text, date_list):
     return target_text
 
 
-def substitute_to_persName(target_text, person_list):
+def substitute_to_person_name(target_text, person_list):
     """人名リストのデータを対象に、それぞれの記述に該当するVIAF IDを取得し、
-       テクスト中の該当箇所を<persName>に置換したものとして返す
+       テクスト中の該当箇所を<persName>タグで囲んだテクストに置換したものとして返す
     """
 
     viaf_query_uri = 'http://www.viaf.org/viaf/search?query=cql.any+=+"{person_name}"&maximumRecords=5&httpAccept=application/json'
@@ -631,7 +631,8 @@ def substitute_to_persName(target_text, person_list):
             viaf_id = author['@id'][5:]
             viaf_uri = 'https://viaf.org' + '/' + viaf_id
 
-        except:
+        except KeyError as error:
+            print(f'{person} does not have the {error} key.')
             viaf_uri = ''
 
         encoded_personName = '<persName ref="{uri}">{person}</persName>'
@@ -642,9 +643,9 @@ def substitute_to_persName(target_text, person_list):
     return target_text
 
 
-def substitute_to_placeName(target_text, place_list):
+def substitute_to_place_name(target_text, place_list):
     """地名リストのデータを対象に、それぞれの記述に該当するGeoNames IDを取得し、
-       テクスト中の該当箇所を<placeName>に置換したものとして返す
+       テクスト中の該当箇所を<placeName>タグで囲んだテクストに置換したものとして返す
     """
 
     geoNames_query_url = 'https://www.geonames.org/search.html?q={place_name}&country='
@@ -652,7 +653,7 @@ def substitute_to_placeName(target_text, place_list):
         query_result = requests.get(geoNames_query_url.format(place_name=place))
         soup_object = bs4.BeautifulSoup(query_result.text, 'lxml')
 
-        try:
+        if len(soup_object.select('.restable')) >= 1:
             table_list = soup_object.select('.restable')
             tr_tags = table_list[0].select('tr')
             target_a_tag = tr_tags[2].a
@@ -663,7 +664,7 @@ def substitute_to_placeName(target_text, place_list):
 
             geoNames_id = 'https://www.geonames.org' + uri_endpoint
 
-        except:
+        else:
             geoNames_id = ''
 
         encoded_placeName = '<placeName ref="{uri}">{place}</placeName>'
@@ -674,8 +675,8 @@ def substitute_to_placeName(target_text, place_list):
     return target_text
 
 
-def substitute_to_typeEvent(target_text, event_list):
-    """歴史的事象のリストのデータを、<name>タグに置換したテクストとして返す
+def add_name_elements_to_events(target_text, event_list):
+    """歴史的事象のリストのデータを、<name>タグで囲んだテクストに置換して返す
     """
 
     for event in event_list:
@@ -700,9 +701,9 @@ persons = ['林子平', '橋本左内', 'ペリー', '井伊大老', '安藤昌�
 
 # 定義した関数の実行
 whole_text = convert_to_arabic_numeric(whole_text, dates)
-whole_text = substitute_to_placeName(whole_text, places)
-whole_text = substitute_to_persName(whole_text, persons)
-whole_text = substitute_to_typeEvent(whole_text, events)
+whole_text = substitute_to_place_name(whole_text, places)
+whole_text = substitute_to_person_name(whole_text, persons)
+whole_text = add_name_element_to_events(whole_text, events)
 
 # 置換結果の書き込み
 result_file = open('result.xml', 'w', encoding='utf-8')
