@@ -356,21 +356,19 @@ WEB APIは、ウェブ空間の性格を大きく変えることに貢献した�
 ---
 
 ### **1. 人名に基づくクエリを投げる**
-VIAFのAPIドキュメントによれば、次のようなURIを指定することによって、人名のデータを取得できます (https://platform.worldcat.org/api-explorer/apis/VIAF )。
+VIAFのAPIドキュメントによれば、次のようにURIを指定することによって、人名による検索結果を複数件格納したJSONデータとして取得できます (https://platform.worldcat.org/api-explorer/apis/VIAF )。
 
-    http://www.viaf.org/viaf/search?query=cql.any+=+"Jane Austen"&maximumRecords=5&httpAccept=application/json
-
-最後のJSONをXMLに変えれば、XMLデータが返ってきますが、PythonからはJSONデータの方がアクセスしやすいので、今回はJSONデータを扱うことにします。
+    http://www.viaf.org/viaf/AutoSuggest?query=austen
 
 
-このURIのうち、「Jane Austin」と記述されている箇所だけを変更すれば、検索したい人物を変更することができます。そこで、事前に準備しておいた人名リストに基づいて、上記のURLの名前の部分だけが変わるように<span style="color:tomato">**forループ文**</span>を書きます。
+このURIのうち、「austen」と記述されている箇所だけを変更すれば、検索したい人物を変更することができます。そこで、事前に準備しておいた人名リストに基づいて、上記のURLの名前の部分だけが変わるように<span style="color:tomato">**forループ文**</span>を書きます。
 
 ```py
 import requests
 
 persons = ['林子平', '橋本左内', 'ペリー', '井伊大老', '安藤昌益', '佐藤信淵', '渡辺崋山', '高野長英', '佐久間象山', '浜口梧陵', '林金兵衛', '河野広中', 'グラント将軍', '陸奥宗光']
 
-viaf_query_uri = 'http://www.viaf.org/viaf/search?query=cql.any+=+"{person_name}"&maximumRecords=5&httpAccept=application/json'
+viaf_query_uri = 'http://www.viaf.org/viaf/AutoSuggest?query={person_name}'
 
 for person in persons:
     query_result = requests.get(viaf_query_uri.format(person_name=person))
@@ -391,38 +389,34 @@ api_dict = json.loads(api_json)
 
 JSONデータの構造を確認するには、例えばFireFoxブラウザが色分けと整形を行ってくれますので、活用してみると良いでしょう。
 
-![firefox_json](api_json.jpg)
+![firefox_json](viaf_query.jpg)
 
-複数階層の辞書やリストで構成されたJSONデータを掘り下げていくと、人名とVIAF IDが格納された辞書を見つけることができます。検索結果の人名とVIAF IDを取得するには、次のように指定しましょう。
+複数階層の辞書やリストで構成されたJSONデータを掘り下げていくと、人名とVIAF IDが格納された辞書を見つけることができます。例えば1番目の検索結果の人名とVIAF IDを取得するには、次のように指定しましょう。
 
 ```py
-author = api_dict['searchRetrieveResponse']['records'][0]['record']['recordData']['titles']['author']
+person = api_dict['result'][0]['term']
+viafID = api_dict['result'][0]['viafid']
 
-# author = {'@id': 'VIAF|42142122', 'text': '林子平,'} となる
+# viafID = '' となる
 ```
-今回のように、検索語が一意に特定できるような人名である場合には、1番目の検索結果を取得しても問題ないかもしれませんが、「ペリー」などのように様々な人物を示す可能性のある人名でクエリを投げる時には、後に手作業で修正するなどすると良いでしょう。
-
-さて、<span style="color:tomato">**上記の辞書型オブジェクトを取得した後、最低限必要な箇所だけ抽出して、最終的に絶対パスに変換**</span>します。
+さて、この後、最低限必要な箇所だけ抽出して、最終的に絶対パスに変換します。人名とVIAF IDの組み合わせを辞書型オブジェクトとして格納しておきます。
 
 ```py
-viaf_id = author['@id'][5:]
-
-viaf_uri = 'https://viaf.org/viaf/' + viaf_id
+viaf_uri = 'https://viaf.org/viaf/' + viafID
 # viaf_uri = 'https://viaf.org/viaf/42142122' となる
+
+persons = {'林子平': 'https://viaf.org/viaf/42142122'}
 ```
-
-本節のコードをまとめたものは、本ガイドラインの[第III部](#module)にモジュールとしてまとめてありますので、ご確認ください。
-
-機械的に付与したVIAF IDが正しいのかどうかについては、今回は手作業で確認するタスクとして残しておきたいと思います。
+今回のように、検索語が一意に特定できるような人名である場合には、1番目の検索結果を取得しても問題ないかもしれませんが、「ペリー」などのように様々な人物を示す可能性のある人名のVIAF IDを検討するために、手作業を経由すると良いでしょう。この点については、本ガイドラインの[第III部](#module)にまとめたモジュールの中に記述してありますので、ご確認ください。
 
 ## 7-2. 本文の該当箇所をタグ付きで置換する
 
 人名リストに対応するVIAF IDを取得した後は、<span style="color:tomato">**本文テクストをタグ付きマークアップテクストとして置換する処理**</span>を書きます。該当箇所の記述は次のようになるでしょう。
 
 ```py
-for person in persons:
+for person, uri in persons.items():
     encoded_personName = '<persName ref="{uri}">{person}</persName>'
-    whole_text = whole_text.replace(person, encoded_personName.format(uri=viaf_uri, person=person))
+    whole_text = whole_text.replace(person, encoded_personName.format(uri=uri, person=person))
 ```
 
 ---
@@ -537,6 +531,7 @@ for event in events:
 
 - <span style="color:tomato">**GeoNamesやVIAFを対象にウェブスクレイピングを行うので、timeモジュールのsleep関数を使って、相手サーバーの負担を減らす工夫をした**</span>
 - <span style="color:tomato">**GeoNamesやVIAFに該当記述がない場合の例外処理を組み込んだ**</span>
+- <span style="color:tomato">**APIでの検索結果を複数件取得し、IDの妥当性を検証する手作業をサポートする関数を組み込んだ**</span>
 - <span style="color:tomato">**最終的に置換した文字列を、\<body\> タグで囲んだ**</span>
 
 ```py
@@ -572,10 +567,94 @@ def extract_people_and_places(target_text):
 
     # 重複を削除
     people = list(set(people))
-    places = list(set(people))
+    places = list(set(place))
+
+    print('Finished parsing and listing up the people and places.')
 
     # 人名・地名リストをタプルに格納して返す
     return people, places
+
+
+def make_file_to_normalize_entities(filename, entity_list):
+    """
+    固有表現の正規化を手作業で行うためのファイルを返す
+    """
+
+    output_file = open(filename, 'w', encoding='utf-8')
+    for entity in entity_list:
+        output_file.write(entity)
+        output_file.write('\n')
+
+    output_file.close()
+
+    print('Finished creating the file for normalizing.')
+
+    return None
+
+
+def get_viaf_api(normalized_person_file):
+    """
+    人名の表記が正規化されたファイルを読み込み、各人名に対応するVIAF APIを取得し、タブ区切りの文字列型オブジェクトとして返す
+    """
+
+    input_file = open(normalized_person_file, 'r', encoding='utf-8')
+    normalized_persons = input_file.read().split('\n')
+
+    viaf_query_uri = 'http://www.viaf.org/viaf/AutoSuggest?query={person_name}'
+
+    outputs = ''
+
+    for person in normalized_persons:
+        outputs += '========{query}========\n'.format(query=person)
+
+        query_result = requests.get(viaf_query_uri.format(person_name=person))
+        api_json = query_result.text
+        api_dict = json.loads(api_json)
+
+        if api_dict['result'] != None:
+            print('{person} has some search results.'.format(person=person))
+            for record_num in range(len(api_dict['result'])):
+                person = api_dict['result'][record_num]['term']
+                viafID = api_dict['result'][record_num]['viafid']
+                viaf_uri = 'https://viaf.org/viaf/' + viafID
+                outputs += '{person}\t{uri}\n'.format(person=person, uri=viaf_uri)
+
+        else:
+            print('{person} has no search result.'.format(person=person))
+            person = person
+            viaf_uri = ''
+            outputs += '{person}\t{uri}\n'.format(person=person, uri=viaf_uri)
+
+        time.sleep(0.5)
+
+    print('Completed extracting the search results from VIAF.')
+
+    return outputs
+
+
+def make_tsv_to_check_api(filename, strings):
+    """
+    get_viaf_api関数の結果などを書き込んだTSVファイルを返す。手作業での検証作業をサポートする
+    """
+
+    output_tsv = open(filename, 'w', encoding='utf-8')
+    output_tsv.write(strings)
+    output_tsv.close()
+
+    print('Finished writing the strings to the file.')
+
+    return None
+
+"""
+error log
+
+Traceback (most recent call last):
+  File "<pyshell#28>", line 1, in <module>
+    make_tsv_to_check_viaf_api(persons, 'check.tsv')
+  File "<pyshell#27>", line 18, in make_tsv_to_check_viaf_api
+    if len(api_dict['result']) >= 1:
+TypeError: object of type 'NoneType' has no len()
+"""
 
 
 def convert_to_arabic_numeric(target_text, date_list):
@@ -611,34 +690,22 @@ def convert_to_arabic_numeric(target_text, date_list):
             encoded_date = '<date when="{arabic}">{kansuji}</date>'
             target_text = target_text.replace(kansuji, encoded_date.format(arabic=arabic, kansuji=kansuji))
 
+    print('Converted Kansuji to Arabic numbers.')
+
     return target_text
 
 
-def substitute_to_person_name(target_text, person_list):
-    """人名リストのデータを対象に、それぞれの記述に該当するVIAF IDを取得し、
-       テクスト中の該当箇所を<persName>タグで囲んだテクストに置換したものとして返す
+def substitute_to_person_name(target_text, person_dict):
+    """人名リストのデータを対象に、テクスト中の該当箇所を<persName>タグで囲んだテクストに置換したものとして返す
     """
 
-    viaf_query_uri = 'http://www.viaf.org/viaf/search?query=cql.any+=+"{person_name}"&maximumRecords=5&httpAccept=application/json'
-
-    for person in person_list:
-        query_result = requests.get(viaf_query_uri.format(person_name=person))
-        api_json = query_result.text
-        api_dict = json.loads(api_json)
-
-        try:
-            author = api_dict['searchRetrieveResponse']['records'][0]['record']['recordData']['titles']['author']
-            viaf_id = author['@id'][5:]
-            viaf_uri = 'https://viaf.org/viaf' + viaf_id
-
-        except KeyError as error:
-            print(f'{person} does not have the {error} key.')
-            viaf_uri = ''
-
+    for person, uri in person_dict.items():
         encoded_personName = '<persName ref="{uri}">{person}</persName>'
-        target_text = target_text.replace(person, encoded_personName.format(uri=viaf_uri, person=person))
+        target_text = target_text.replace(person, encoded_personName.format(uri=uri, person=person))
 
         time.sleep(0.5)
+
+    print('Substituted the person names with the encoded texts.')
 
     return target_text
 
@@ -672,6 +739,8 @@ def substitute_to_place_name(target_text, place_list):
 
         time.sleep(0.5)
 
+    print('Substituted the place names with the encoded texts.')
+
     return target_text
 
 
@@ -682,6 +751,8 @@ def add_name_elements_to_events(target_text, event_list):
     for event in event_list:
         encoded_event = '<name type="event">{event}</name>'
         target_text = target_text.replace(event, encoded_event.format(event=event))
+
+    print('Added name elements with the texts related to events.')
 
     return target_text
 
@@ -694,15 +765,40 @@ input_file.close()
 
 places, persons = extract_people_and_places(whole_text)
 
-# 今回は人名・地名リストを手作業で修正
-places = ['中国', '日本', '極東', 'イギリス', 'インド', 'アメリカ', 'サンフランシスコ', '沖繩', '那覇', '小笠原', '父島', '上海', '生麦', '薩摩', '対馬', '紀州', '尾張', 'フランス', 'アジア', '台湾', '朝鮮', 'ポーツマス']
+# 自動抽出された固有表現を手作業で修正するために、TSVファイルに出力
+make_file_to_normalize_entities('NERed_places.tsv', places)
+make_file_to_normalize_entities('NERed_persons.tsv', persons)
 
-persons = ['林子平', '橋本左内', 'ペリー', '井伊大老', '安藤昌益', '佐藤信淵', '渡辺崋山', '高野長英', '佐久間象山', '浜口梧陵', '林金兵衛', '河野広中', 'グラント将軍', '陸奥宗光']
+# 今回、地名リストは'NERed_places.tsv'を基に手作業で修正
+normalized_places = ['中国', '日本', '極東', 'イギリス', 'インド', 'アメリカ', 'サンフランシスコ', '沖繩', '那覇', '小笠原', '父島', '上海', '生麦', '薩摩', '対馬', '紀州', '尾張', 'フランス', 'アジア', '台湾', '朝鮮', 'ポーツマス']
+
+# 人名に関しては、'NERed_persons.tsv'を基に手作業で人名表記を正規化したTSVファイル'normalized_people_name.tsv'を作成しておく
+
+# 正規化人名リストを読み込んで、VIAF IDの候補を記したTSVファイルを作成する
+viaf_ids = get_viaf_api('normalized_people_name.tsv') 
+make_tsv_to_check_api('viaf_check.tsv', viaf_ids)
+
+# 'viaf_check.tsv'に基づいてURIの検証を行い、以下の辞書を作成する
+persons_dict = {
+    '林子平': 'https://viaf.org/viaf/42142122',
+    '橋本左内': 'https://viaf.org/viaf/72201183',
+    'ペリー': 'http://viaf.org/viaf/37133702',
+    '井伊大老': 'http://viaf.org/viaf/42640401',
+    '安藤昌益': 'https://viaf.org/viaf/44415205',
+    '佐藤信淵': 'https://viaf.org/viaf/60440169',
+    '渡辺崋山': 'https://viaf.org/viaf/96574339',
+    '高野長英': 'https://viaf.org/viaf/10650351',
+    '佐久間象山': 'https://viaf.org/viaf/25948303',
+    '浜口梧陵': '',
+    '林金兵衛': 'https://viaf.org/viaf/61383794',
+    '河野広中': 'https://viaf.org/viaf/26014043',
+    'グラント将軍': 'http://viaf.org/viaf/66505625',
+    '陸奥宗光': 'https://viaf.org/viaf/12518180'}
 
 # 定義した関数の実行
 whole_text = convert_to_arabic_numeric(whole_text, dates)
-whole_text = substitute_to_place_name(whole_text, places)
-whole_text = substitute_to_person_name(whole_text, persons)
+whole_text = substitute_to_place_name(whole_text, normalized_places)
+whole_text = substitute_to_person_name(whole_text, persons_dict)
 whole_text = add_name_element_to_events(whole_text, events)
 
 # 置換結果の書き込み
