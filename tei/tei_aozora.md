@@ -1,5 +1,5 @@
 # **PythonによるセマンティックTEIマークアップのためのガイドライン**
-#### ver 1.0: 最終更新 2019年1月27日
+#### ver 1.0: 最終更新 2019年1月28日
 
 ## 小風尚樹
 ---
@@ -548,7 +548,7 @@ def extract_people_and_places(target_text):
     """
 
     m = MeCab.Tagger()
-    parsed_words = m.parse(contents)
+    parsed_words = m.parse(target_text)
     parsed_list = parsed_words.split('\n')
     
     people = []
@@ -567,7 +567,7 @@ def extract_people_and_places(target_text):
 
     # 重複を削除
     people = list(set(people))
-    places = list(set(place))
+    places = list(set(places))
 
     print('Finished parsing and listing up the people and places.')
 
@@ -752,7 +752,7 @@ input_file = open('aozora_kurofune.txt', 'r', encoding='utf-8')
 whole_text = input_file.read()
 input_file.close()
 
-places, persons = extract_people_and_places(whole_text)
+persons, places = extract_people_and_places(whole_text)
 
 # 自動抽出された固有表現を手作業で修正するために、TSVファイルに出力
 make_file_to_normalize_entities('NERed_places.tsv', places)
@@ -778,7 +778,7 @@ persons_dict = {
     '渡辺崋山': 'https://viaf.org/viaf/96574339',
     '高野長英': 'https://viaf.org/viaf/10650351',
     '佐久間象山': 'https://viaf.org/viaf/25948303',
-    '浜口梧陵': '',
+    '浜口梧陵': 'http://viaf.org/viaf/26000155',
     '林金兵衛': 'https://viaf.org/viaf/61383794',
     '河野広中': 'https://viaf.org/viaf/26014043',
     'グラント将軍': 'http://viaf.org/viaf/66505625',
@@ -788,7 +788,7 @@ persons_dict = {
 whole_text = convert_to_arabic_numeric(whole_text, dates)
 whole_text = substitute_to_place_name(whole_text, normalized_places)
 whole_text = substitute_to_person_name(whole_text, persons_dict)
-whole_text = add_name_element_to_events(whole_text, events)
+whole_text = add_name_elements_to_events(whole_text, events)
 
 # 置換結果の書き込み
 result_file = open('result.xml', 'w', encoding='utf-8')
