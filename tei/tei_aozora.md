@@ -645,17 +645,6 @@ def make_tsv_to_check_api(filename, strings):
 
     return None
 
-"""
-error log
-
-Traceback (most recent call last):
-  File "<pyshell#28>", line 1, in <module>
-    make_tsv_to_check_viaf_api(persons, 'check.tsv')
-  File "<pyshell#27>", line 18, in make_tsv_to_check_viaf_api
-    if len(api_dict['result']) >= 1:
-TypeError: object of type 'NoneType' has no len()
-"""
-
 
 def convert_to_arabic_numeric(target_text, date_list):
     """年月日のリストを対象に、漢数字をアラビア数字に置換した後、漢数字とアラビア数字が対になった辞書を定義し、<date>タグに置換したテクストを返す
