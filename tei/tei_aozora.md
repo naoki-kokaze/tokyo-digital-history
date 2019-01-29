@@ -646,6 +646,23 @@ def make_tsv_to_check_api(filename, strings):
     return None
 
 
+def read_tsv_to_make_person_dictionary(filename):
+    """
+    手作業でVIAF IDを検証したTSVファイルを読み込み、人名とVIAF URIが対になった辞書型オブジェクトを返す
+    """
+
+    input_file = open(filename, 'r', encoding='utf-8')
+    rows = input_file.read().split('\n')
+    person_dictionary = {}
+
+    for row in rows:
+        person, viaf_uri = row.split('\t')
+        if person not in person_dictionary.keys():
+            person_dictionary[person] = viaf_uri
+        
+    return person_dictionary
+
+
 def convert_to_arabic_numeric(target_text, date_list):
     """年月日のリストを対象に、漢数字をアラビア数字に置換した後、漢数字とアラビア数字が対になった辞書を定義し、<date>タグに置換したテクストを返す
     """
@@ -767,7 +784,12 @@ normalized_places = ['中国', '日本', '極東', 'イギリス', 'インド', 
 viaf_ids = get_viaf_api('normalized_people_name.tsv') 
 make_tsv_to_check_api('viaf_check.tsv', viaf_ids)
 
-# 'viaf_check.tsv'に基づいてURIの検証を行い、以下の辞書を作成する
+# 'viaf_check.tsv'に基づいてURIの検証を手作業で行い、'verified_viaf.tsv'ファイルとして保存しておく
+
+# 人名とVIAF URIが対になった辞書を作成する
+persons_dict = read_tsv_to_make_person_dictionary('verified_viaf.tsv')
+
+"""
 persons_dict = {
     '林子平': 'https://viaf.org/viaf/42142122',
     '橋本左内': 'https://viaf.org/viaf/72201183',
@@ -783,6 +805,7 @@ persons_dict = {
     '河野広中': 'https://viaf.org/viaf/26014043',
     'グラント将軍': 'http://viaf.org/viaf/66505625',
     '陸奥宗光': 'https://viaf.org/viaf/12518180'}
+"""
 
 # 定義した関数の実行
 whole_text = convert_to_arabic_numeric(whole_text, dates)
